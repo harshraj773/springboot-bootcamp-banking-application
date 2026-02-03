@@ -1,0 +1,56 @@
+spring:
+  application:
+    name: banking-app
+
+  datasource:
+    url: jdbc:mysql://localhost:3306/banking_app
+    username: root
+    password: harsh@123
+    driver-class-name: com.mysql.cj.jdbc.Driver
+
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: true
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.MySQLDialect
+
+  cache:
+    type: redis
+  data:
+    redis:
+      host: localhost
+      port: 6379
+      timeout: 2000ms
+
+server:
+  port: 9080
+
+logging:
+  level:
+    org.springframework.cache: TRACE
+    org.springframework.data.redis.cache: DEBUG
+
+
+# =============================
+# Resilience4j Retry Config
+# =============================
+resilience4j:
+  retry:
+    instances:
+      personServiceRetry:
+        max-attempts: 2
+        wait-duration: 2s
+        enable-exponential-backoff: true
+        exponential-backoff-multiplier: 2
+        randomized-wait-factor: 0.5
+
+        # Retry only on transient DB/network issues
+        retry-exceptions:
+          - com.mybank.banking_app.exceptions.BusinessException
+
+        # Never retry business validations
+        ignore-exceptions:
+          - java.sql.SQLTransientConnectionException
+

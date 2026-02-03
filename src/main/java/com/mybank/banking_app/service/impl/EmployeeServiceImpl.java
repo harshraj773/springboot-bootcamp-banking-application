@@ -13,6 +13,8 @@ import com.mybank.banking_app.repositories.EmployeeRepository;
 import com.mybank.banking_app.repositories.PersonRepository;
 import com.mybank.banking_app.service.EmployeeService;
 import com.mybank.banking_app.utils.PaginationUtil;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -47,6 +49,10 @@ public class EmployeeServiceImpl implements EmployeeService {
     }
 
     @Override
+    @CacheEvict(
+            value = "employee",
+            key = "'id:' + #employeeId"
+    )
     public EmployeeResponseDto updateEmployee(Long employeeId, EmployeeUpdateRequestDto dto) {
         Employee employee = employeeRepository.findById(employeeId)
                 .orElseThrow(() -> new ResourceNotFoundException("Employee not found with id: "+ employeeId));
@@ -56,6 +62,10 @@ public class EmployeeServiceImpl implements EmployeeService {
     }
 
     @Override
+    @Cacheable(
+            value = "employee",
+            key = "'id:' + #employeeId"
+    )
     public EmployeeResponseDto getEmployeeById(Long employeeId) {
         Employee employee = employeeRepository.findById(employeeId)
                 .orElseThrow(() -> new ResourceNotFoundException("Employee not found with id: "+ employeeId));
@@ -77,6 +87,10 @@ public class EmployeeServiceImpl implements EmployeeService {
     }
 
     @Override
+    @CacheEvict(
+            value = "employee",
+            key = "'id:' + #employeeId"
+    )
     public void deactivateEmployee(Long employeeId) {
         Employee employee = employeeRepository.findById(employeeId)
                 .orElseThrow(() -> new ResourceNotFoundException("Employee not found with id: "+ employeeId));

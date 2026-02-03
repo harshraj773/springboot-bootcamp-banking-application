@@ -13,6 +13,9 @@ import com.mybank.banking_app.repositories.CustomerRepository;
 import com.mybank.banking_app.repositories.PersonRepository;
 import com.mybank.banking_app.service.CustomerService;
 import com.mybank.banking_app.utils.PaginationUtil;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.CachePut;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -49,6 +52,10 @@ public class CustomerServiceImpl implements CustomerService {
     }
 
     @Override
+    @CacheEvict(
+            value = "customer",
+            key = "'id:' + #customerId"
+    )
     public CustomerResponseDto updateCustomerStatus(Long customerId, CustomerUpdateRequestDto dto) {
         Customer customer = customerRepository.findById(customerId)
                 .orElseThrow(() -> new ResourceNotFoundException("Customer not found with id: "+ customerId));
@@ -59,11 +66,15 @@ public class CustomerServiceImpl implements CustomerService {
     }
 
     @Override
+    @Cacheable(
+            value = "customer",
+            key = "'id:' + #customerId"
+    )
     public CustomerResponseDto getCustomerById(Long customerId) {
         Customer customer = customerRepository.findById(customerId)
                 .orElseThrow(() -> new ResourceNotFoundException("Customer not found with id: "+ customerId));
         if(customer.getCustomerStatus() == CustomerStatus.INACTIVE)
-            throw new ResourceNotFoundException("Branch Inactive");
+            throw new ResourceNotFoundException("Customer Inactive");
         return customerMapper.toResponseDto(customer);
     }
 
@@ -80,6 +91,10 @@ public class CustomerServiceImpl implements CustomerService {
     }
 
     @Override
+    @CacheEvict(
+            value = "customer",
+            key = "'id:' + #customerId"
+    )
     public void deactivateCustomer(Long customerId) {
         Customer customer = customerRepository.findById(customerId)
                 .orElseThrow(() -> new ResourceNotFoundException("Customer not found with id: "+ customerId));
